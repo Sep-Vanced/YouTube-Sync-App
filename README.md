@@ -21,38 +21,42 @@ The public entry file is:
 3. Start Apache and MySQL.
 4. Open:
    `http://localhost/technical-exam/`
-5. Click `Enter Demo Workspace`.
+5. Use the landing page to enter the app.
 
-No Google OAuth setup or YouTube API setup is required for evaluation. The repository already includes a tracked `config/config.local.php` that enables local demo mode with ready-to-use database settings.
+## Local Configuration
+
+The app loads base settings from `config/config.php` and local overrides from:
+
+`config/config.local.php`
+
+In this repository, `config/config.local.php` is tracked and currently enables local demo mode with these database settings:
+
+- Host: `127.0.0.1`
+- Port: `3306`
+- Database: `youtube_sync_app`
+- User: `root`
+- Password: empty string
 
 ## Important Notes
 
 - This repository is evaluator-ready in local demo mode.
-- `config/config.local.php` is included and already configured for local use.
-- Default local database settings assume XAMPP:
-  - host: `127.0.0.1`
-  - port: `3306`
-  - database: `youtube_sync_app`
-  - user: `root`
-  - password: empty string
-- Demo mode replaces external Google OAuth and YouTube API calls with bundled local data so the application can be tested immediately after cloning.
-- To test the sync form manually in demo mode, use either of these sample Channel IDs:
-  - `UCDEMOCHANNEL000000000001`
-  - `UCDEMOCHANNEL000000000002`
+- Demo mode is enabled through `config/config.local.php`.
+- The landing page can route into a local demo workspace when Google OAuth is not configured.
+- Demo mode seeds bundled sample channels and videos for local evaluation.
+- The original Google OAuth and YouTube sync flow is still supported by the codebase when real credentials are configured.
+- All database queries use prepared statements through PDO.
+- Output is escaped with `htmlspecialchars()` to reduce XSS risk.
+- The channel detail page shows 20 videos per page.
 
 ## How The System Works
 
-1. The user opens the landing page and enters the local demo workspace.
-2. The app creates or updates a local demo user in the `users` table and signs that user into the session.
-3. Demo mode seeds sample channels and videos into the database so the evaluator can view working dashboard and channel pages immediately.
-4. When the evaluator submits a sample Channel ID, the sync flow runs through the same save logic used by the real app:
-   - validate the Channel ID
-   - load channel details
-   - load uploaded videos
-   - save or update records in `channels`
-   - save or update records in `videos`
-5. The dashboard lists saved channels and total synced videos.
-6. The channel page shows the selected channel with paginated uploaded videos.
+1. The user opens the landing page.
+2. In demo mode, the app signs the evaluator into a local demo account and can seed sample channels and videos.
+3. In real-service mode, the app signs the user in with Google OAuth and stores or updates the user in the `users` table.
+4. On the dashboard, the user enters a YouTube Channel ID.
+5. The app validates the Channel ID and requests channel details from either the demo data layer or the YouTube Data API.
+6. The app reads uploaded videos and saves or updates records in the `channels` and `videos` tables.
+7. The dashboard lists saved channels, and the channel page shows synced videos with pagination.
 
 ## Project Structure
 
@@ -66,4 +70,9 @@ No Google OAuth setup or YouTube API setup is required for evaluation. The repos
 
 ## Real-Service Mode
 
-The original Google OAuth and YouTube API flow is still supported by the codebase. To use real external services instead of demo mode, disable demo mode in `config/config.local.php` and provide real Google OAuth and YouTube API credentials.
+To use real Google OAuth and YouTube API requests instead of demo mode:
+
+1. Update `config/config.local.php`.
+2. Set demo mode to disabled.
+3. Provide real Google OAuth and YouTube API credentials.
+4. Use the normal Google sign-in flow from the landing page.
