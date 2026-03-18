@@ -8,14 +8,17 @@ if (is_logged_in()) {
     redirect('pages/dashboard.php');
 }
 
-$clientId = (string) config('google.client_id');
-$redirectUri = (string) config('google.redirect_uri');
+if (!google_oauth_configured()) {
+    if (demo_mode_enabled()) {
+        redirect('auth/demo_login.php');
+    }
 
-if ($clientId === 'YOUR_GOOGLE_CLIENT_ID' || $redirectUri === '') {
     set_flash('error', 'Google OAuth is not configured yet. Update config/config.php first.');
     redirect('public/index.php');
 }
 
+$clientId = (string) config('google.client_id');
+$redirectUri = (string) config('google.redirect_uri');
 $state = bin2hex(random_bytes(16));
 $_SESSION['oauth_state'] = $state;
 

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">Demo channel artwork</title>
+  <desc id="desc">A local placeholder image for the bundled demo channel.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#2f6df6" />
+      <stop offset="100%" stop-color="#0e244d" />
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="120" fill="url(#bg)" />
+  <circle cx="120" cy="92" r="38" fill="#dce9ff" opacity="0.95" />
+  <path d="M59 185c8-30 33-48 61-48s53 18 61 48" fill="#dce9ff" opacity="0.95" />
+</svg>

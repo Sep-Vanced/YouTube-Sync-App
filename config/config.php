@@ -36,6 +36,16 @@ $config = [
     'youtube' => [
         'api_key' => 'YOUR_YOUTUBE_API_KEY',
     ],
+    'demo' => [
+        'enabled' => false,
+        'seed_on_login' => true,
+        'user' => [
+            'google_id' => 'demo-local-user',
+            'name' => 'Evaluator Demo',
+            'email' => 'demo@localhost.test',
+            'profile_picture' => '',
+        ],
+    ],
 ];
 
 $localConfigPath = __DIR__ . '/config.local.php';
@@ -64,6 +74,31 @@ function config(string $key, mixed $default = null): mixed
     }
 
     return $value;
+}
+
+function demo_mode_enabled(): bool
+{
+    return (bool) config('demo.enabled', false);
+}
+
+function google_oauth_configured(): bool
+{
+    $clientId = trim((string) config('google.client_id', ''));
+    $clientSecret = trim((string) config('google.client_secret', ''));
+    $redirectUri = trim((string) config('google.redirect_uri', ''));
+
+    return $clientId !== ''
+        && $clientId !== 'YOUR_GOOGLE_CLIENT_ID'
+        && $clientSecret !== ''
+        && $clientSecret !== 'YOUR_GOOGLE_CLIENT_SECRET'
+        && $redirectUri !== '';
+}
+
+function youtube_api_configured(): bool
+{
+    $apiKey = trim((string) config('youtube.api_key', ''));
+
+    return $apiKey !== '' && $apiKey !== 'YOUR_YOUTUBE_API_KEY';
 }
 
 function app_url(string $path = ''): string

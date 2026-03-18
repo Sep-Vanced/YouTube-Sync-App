@@ -4,6 +4,118 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../config/config.php';
 
+function demo_channel_catalog(): array
+{
+    $channelThumb = app_url('public/assets/demo-channel.svg');
+    $videoThumbA = app_url('public/assets/demo-video-a.svg');
+    $videoThumbB = app_url('public/assets/demo-video-b.svg');
+
+    return [
+        'UCDEMOCHANNEL000000000001' => [
+            'channel_id' => 'UCDEMOCHANNEL000000000001',
+            'title' => 'Demo Creator Lab',
+            'description' => 'A bundled local channel for evaluator testing. It demonstrates how the app saves a channel, stores uploaded videos, and renders paginated results without relying on external APIs.',
+            'thumbnail' => $channelThumb,
+            'uploads_playlist_id' => 'PLDEMOCHANNEL000000000001',
+            'videos' => [
+                [
+                    'video_id' => 'demo-video-0001',
+                    'channel_id' => 'UCDEMOCHANNEL000000000001',
+                    'title' => 'Workspace Tour and Setup Walkthrough',
+                    'thumbnail' => $videoThumbA,
+                    'published_at' => '2025-02-01 09:00:00',
+                ],
+                [
+                    'video_id' => 'demo-video-0002',
+                    'channel_id' => 'UCDEMOCHANNEL000000000001',
+                    'title' => 'How Local Sync Stores Channel Uploads',
+                    'thumbnail' => $videoThumbB,
+                    'published_at' => '2025-02-03 15:30:00',
+                ],
+                [
+                    'video_id' => 'demo-video-0003',
+                    'channel_id' => 'UCDEMOCHANNEL000000000001',
+                    'title' => 'Paginated Video Listing in the Dashboard',
+                    'thumbnail' => $videoThumbA,
+                    'published_at' => '2025-02-05 11:45:00',
+                ],
+            ],
+        ],
+        'UCDEMOCHANNEL000000000002' => [
+            'channel_id' => 'UCDEMOCHANNEL000000000002',
+            'title' => 'Local Testing Studio',
+            'description' => 'A second bundled demo channel that lets the evaluator test multiple saved channels, navigation, and repeated syncs in a fully local environment.',
+            'thumbnail' => $channelThumb . '?v=2',
+            'uploads_playlist_id' => 'PLDEMOCHANNEL000000000002',
+            'videos' => [
+                [
+                    'video_id' => 'demo-video-1001',
+                    'channel_id' => 'UCDEMOCHANNEL000000000002',
+                    'title' => 'Second Demo Channel Overview',
+                    'thumbnail' => $videoThumbB,
+                    'published_at' => '2025-02-07 08:15:00',
+                ],
+                [
+                    'video_id' => 'demo-video-1002',
+                    'channel_id' => 'UCDEMOCHANNEL000000000002',
+                    'title' => 'Reviewing Seeded Content Locally',
+                    'thumbnail' => $videoThumbA,
+                    'published_at' => '2025-02-09 13:20:00',
+                ],
+            ],
+        ],
+    ];
+}
+
+function demo_channel_details(string $channelId): ?array
+{
+    $catalog = demo_channel_catalog();
+
+    return $catalog[$channelId] ?? null;
+}
+
+function demo_channel_details_response(string $channelId): array
+{
+    $channel = demo_channel_details($channelId);
+
+    if ($channel === null) {
+        $demoIds = implode(', ', array_keys(demo_channel_catalog()));
+
+        return [
+            'success' => false,
+            'message' => 'Demo mode is active. Try one of these sample Channel IDs: ' . $demoIds,
+        ];
+    }
+
+    return [
+        'success' => true,
+        'data' => [
+            'channel_id' => $channel['channel_id'],
+            'title' => $channel['title'],
+            'description' => $channel['description'],
+            'thumbnail' => $channel['thumbnail'],
+            'uploads_playlist_id' => $channel['uploads_playlist_id'],
+        ],
+    ];
+}
+
+function demo_channel_videos_response(string $uploadsPlaylistId, string $channelId, int $limit): array
+{
+    $channel = demo_channel_details($channelId);
+
+    if ($channel === null || $channel['uploads_playlist_id'] !== $uploadsPlaylistId) {
+        return [
+            'success' => false,
+            'message' => 'Demo videos could not be loaded for that channel.',
+        ];
+    }
+
+    return [
+        'success' => true,
+        'data' => array_slice($channel['videos'], 0, $limit),
+    ];
+}
+
 function validate_channel_id(string $channelId): bool
 {
     $channelId = trim($channelId);
@@ -15,7 +127,7 @@ function youtube_api_request(string $endpoint, array $params = []): array
 {
     $apiKey = (string) config('youtube.api_key');
 
-    if ($apiKey === '' || $apiKey === 'YOUR_YOUTUBE_API_KEY') {
+    if (!youtube_api_configured()) {
         return [
             'success' => false,
             'message' => 'The YouTube API key is not configured yet.',
@@ -86,6 +198,10 @@ function youtube_api_request(string $endpoint, array $params = []): array
 
 function fetch_channel_details(string $channelId): array
 {
+    if (demo_mode_enabled() && !youtube_api_configured()) {
+        return demo_channel_details_response($channelId);
+    }
+
     $response = youtube_api_request('channels', [
         'part' => 'snippet,contentDetails',
         'id' => $channelId,
@@ -134,6 +250,10 @@ function fetch_channel_details(string $channelId): array
 
 function fetch_channel_videos(string $uploadsPlaylistId, string $channelId, int $limit = 100): array
 {
+    if (demo_mode_enabled() && !youtube_api_configured()) {
+        return demo_channel_videos_response($uploadsPlaylistId, $channelId, $limit);
+    }
+
     $videos = [];
     $nextPageToken = null;
 

@@ -1,5 +1,5 @@
-config/config.local.php
 .vscode/
 .idea/
+.codex-temp/
 Thumbs.db
 desktop.ini

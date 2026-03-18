@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Demo video thumbnail A</title>
+  <desc id="desc">A local placeholder thumbnail for bundled demo video content.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b1630" />
+      <stop offset="100%" stop-color="#274d9c" />
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg)" />
+  <circle cx="190" cy="180" r="98" fill="#2f6df6" opacity="0.55" />
+  <circle cx="486" cy="118" r="74" fill="#83b1ff" opacity="0.35" />
+  <rect x="72" y="72" width="250" height="28" rx="14" fill="#dce9ff" opacity="0.92" />
+  <rect x="72" y="116" width="370" height="22" rx="11" fill="#dce9ff" opacity="0.7" />
+  <rect x="72" y="150" width="308" height="22" rx="11" fill="#dce9ff" opacity="0.7" />
+  <polygon points="287,180 287,258 362,219" fill="#ffffff" />
+</svg>

@@ -1,87 +1,69 @@
 # YouTube Channel Sync App
-Simple PHP web app that uses Google OAuth 2.0 for login and the YouTube Data API v3 to save channels and sync up to 100 videos per channel.
+
+Framework-free PHP technical exam project for signing in, saving YouTube channels, and syncing uploaded videos.
+
+## Entry Point
+
+Open the app at:
+
+`http://localhost/technical-exam/`
+
+The public entry file is:
+
+`public/index.php`
+
+## Run It Quickly
+
+1. Clone or copy the repository into your local web root, for example:
+   `C:\xampp\htdocs\technical-exam`
+2. Create the database and tables by importing:
+   `database/schema.sql`
+3. Start Apache and MySQL.
+4. Open:
+   `http://localhost/technical-exam/`
+5. Click `Enter Demo Workspace`.
+
+No Google OAuth setup or YouTube API setup is required for evaluation. The repository already includes a tracked `config/config.local.php` that enables local demo mode with ready-to-use database settings.
+
+## Important Notes
+
+- This repository is evaluator-ready in local demo mode.
+- `config/config.local.php` is included and already configured for local use.
+- Default local database settings assume XAMPP:
+  - host: `127.0.0.1`
+  - port: `3306`
+  - database: `youtube_sync_app`
+  - user: `root`
+  - password: empty string
+- Demo mode replaces external Google OAuth and YouTube API calls with bundled local data so the application can be tested immediately after cloning.
+- To test the sync form manually in demo mode, use either of these sample Channel IDs:
+  - `UCDEMOCHANNEL000000000001`
+  - `UCDEMOCHANNEL000000000002`
+
+## How The System Works
+
+1. The user opens the landing page and enters the local demo workspace.
+2. The app creates or updates a local demo user in the `users` table and signs that user into the session.
+3. Demo mode seeds sample channels and videos into the database so the evaluator can view working dashboard and channel pages immediately.
+4. When the evaluator submits a sample Channel ID, the sync flow runs through the same save logic used by the real app:
+   - validate the Channel ID
+   - load channel details
+   - load uploaded videos
+   - save or update records in `channels`
+   - save or update records in `videos`
+5. The dashboard lists saved channels and total synced videos.
+6. The channel page shows the selected channel with paginated uploaded videos.
+
 ## Project Structure
-`	ext
-/config
-  config.php
-  config.sample.php
-  config.local.example.php
-  db.php
-/auth
-  login.php
-  callback.php
-  logout.php
-/api
-  youtube.php
-/pages
-  dashboard.php
-  channel.php
-/actions
-  sync_channel.php
-/database
-  schema.sql
-/public
-  index.php
-  /assets
-    styles.css
-    script.js
-`
-## Requirements
-- PHP 8.1 or newer
-- MySQL 8+ or MariaDB with InnoDB support
-- XAMPP, Laragon, or another local PHP/MySQL stack
-- A Google OAuth 2.0 Client ID and Secret
-- A YouTube Data API v3 key
-- PHP pdo_mysql and curl extensions enabled
-## Setup
-1. Place the project in your web root, for example:
-`	ext
-C:\xampp\htdocs\technical-exam
-`
-2. Import the database schema into MySQL:
-`sql
-SOURCE database/schema.sql;
-`
-3. Copy config/config.local.example.php to config/config.local.php.
-4. Open config/config.local.php and update:
-- pp_url
-- google.client_id
-- google.client_secret
-- google.redirect_uri
-- youtube.api_key
-5. If your database settings are different, update config/config.php.
-6. Start Apache and MySQL in XAMPP.
-7. In Google Cloud Console:
-- Enable **YouTube Data API v3**
-- Create OAuth credentials for a **Web Application**
-- Add this redirect URI:
-`	ext
-http://localhost/technical-exam/auth/callback.php
-`
-8. Open the app:
-`	ext
-http://localhost/technical-exam/
-`
-## Configuration Templates
-This repository includes safe configuration templates:
-- config/config.php
-- config/config.sample.php
-- config/config.local.example.php
-Real secrets should stay in config/config.local.php, which is ignored by git.
-## How It Works
-1. The user opens the login page and signs in with Google OAuth 2.0.
-2. After a successful callback, the app stores or updates the user in the users table.
-3. Authenticated users can add a YouTube Channel ID on the dashboard.
-4. The app validates the Channel ID and fetches channel details from the channels endpoint using snippet,contentDetails.
-5. It reads the uploads playlist ID from contentDetails.relatedPlaylists.uploads.
-6. It fetches up to 100 uploaded videos from the playlistItems endpoint using 
-extPageToken.
-7. Channel data is stored in channels, and videos are stored in ideos.
-8. Duplicate channels and videos are prevented with unique indexes and prepared statements.
-9. The channel page shows only videos for the selected channel, 20 per page.
-## Notes
-- This project is intentionally framework-free and beginner-friendly.
-- All database queries use prepared statements through PDO.
-- Output is escaped with htmlspecialchars() to reduce XSS risk.
-- API keys and OAuth secrets stay server-side and should not be committed to a public repository.
-- Saved channels are shared globally in this simple version because the required schema does not include a user-to-channel pivot table.
+
+- `config/` application config and PDO bootstrap
+- `auth/` login, callback, logout, and demo login flow
+- `api/` YouTube integration and demo data layer
+- `actions/` form actions such as channel sync
+- `pages/` dashboard and channel views
+- `database/` schema file
+- `public/` entry page, assets, and public routes
+
+## Real-Service Mode
+
+The original Google OAuth and YouTube API flow is still supported by the codebase. To use real external services instead of demo mode, disable demo mode in `config/config.local.php` and provide real Google OAuth and YouTube API credentials.
