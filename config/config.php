@@ -90,9 +90,83 @@ function is_logged_in(): bool
     return !empty($_SESSION['user']);
 }
 
+function refresh_session_user(): ?array
+{
+    static $attemptedRefresh = false;
+
+    $sessionUser = $_SESSION['user'] ?? null;
+
+    if (!is_array($sessionUser) || $attemptedRefresh || !function_exists('db')) {
+        return $sessionUser;
+    }
+
+    $attemptedRefresh = true;
+
+    $googleId = trim((string) ($sessionUser['google_id'] ?? ''));
+    $email = trim((string) ($sessionUser['email'] ?? ''));
+
+    if ($googleId === '' && $email === '') {
+        return $sessionUser;
+    }
+
+    try {
+        $pdo = db();
+
+        if ($googleId !== '') {
+            $statement = $pdo->prepare(
+                'SELECT id, google_id, name, email, profile_picture
+                 FROM users
+                 WHERE google_id = :google_id
+                 LIMIT 1'
+            );
+            $statement->execute([':google_id' => $googleId]);
+        } else {
+            $statement = $pdo->prepare(
+                'SELECT id, google_id, name, email, profile_picture
+                 FROM users
+                 WHERE email = :email
+                 LIMIT 1'
+            );
+            $statement->execute([':email' => $email]);
+        }
+
+        $freshUser = $statement->fetch();
+
+        if (is_array($freshUser) && !empty($freshUser)) {
+            $_SESSION['user'] = $freshUser;
+
+            return $freshUser;
+        }
+    } catch (Throwable) {
+        return $sessionUser;
+    }
+
+    return $sessionUser;
+}
+
 function current_user(): ?array
 {
-    return $_SESSION['user'] ?? null;
+    return refresh_session_user();
+}
+
+function user_avatar_url(?array $user): string
+{
+    $profilePicture = trim((string) ($user['profile_picture'] ?? ''));
+
+    if ($profilePicture === '') {
+        return '';
+    }
+
+    if (!filter_var($profilePicture, FILTER_VALIDATE_URL)) {
+        $avatarPath = ltrim($profilePicture, '/');
+
+        return app_url($avatarPath) . '?h=' . md5($profilePicture);
+    }
+
+    $avatarKey = (string) ($user['google_id'] ?? $user['email'] ?? 'avatar');
+    $cacheKey = md5($profilePicture);
+
+    return app_url('public/avatar.php') . '?v=' . urlencode($avatarKey) . '&h=' . $cacheKey;
 }
 
 function require_login(): void
