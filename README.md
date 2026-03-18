@@ -76,3 +76,46 @@ To use real Google OAuth and YouTube API requests instead of demo mode:
 2. Set demo mode to disabled.
 3. Provide real Google OAuth and YouTube API credentials.
 4. Use the normal Google sign-in flow from the landing page.
+
+## Evaluator Setup Guide
+
+If the evaluator will test the real Google OAuth and YouTube API flow instead of demo mode, send the credentials separately by email and ask them to place the values in:
+
+`config/config.local.php`
+
+They can use this structure:
+
+```php
+<?php
+return [
+    'app_url' => 'http://localhost/technical-exam',
+    'db' => [
+        'host' => '127.0.0.1',
+        'port' => '3306',
+        'name' => 'youtube_sync_app',
+        'user' => 'root',
+        'pass' => '',
+        'charset' => 'utf8mb4',
+    ],
+    'demo' => [
+        'enabled' => false,
+        'seed_on_login' => true,
+    ],
+    'google' => [
+        'client_id' => 'PASTE_GOOGLE_CLIENT_ID_HERE',
+        'client_secret' => 'PASTE_GOOGLE_CLIENT_SECRET_HERE',
+        'redirect_uri' => 'http://localhost/technical-exam/auth/callback.php',
+    ],
+    'youtube' => [
+        'api_key' => 'PASTE_YOUTUBE_API_KEY_HERE',
+    ],
+];
+```
+
+After updating `config/config.local.php`, the evaluator should:
+
+1. Import `database/schema.sql`.
+2. Start Apache and MySQL in XAMPP.
+3. Open `http://localhost/technical-exam/`.
+4. Click `Continue with Google`.
+5. Sign in and continue to the dashboard.
